@@ -2,6 +2,11 @@
 # coding=utf8
 from __future__ import print_function, division, absolute_import
 
+# 先导入 numpy 并补丁：新版 numpy 中 np.float 已废弃，补上兼容性修改
+import numpy as np
+if not hasattr(np, 'float'):
+    np.float = float
+
 import copy
 import _thread
 import time
@@ -12,7 +17,6 @@ import ros_numpy
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import PointCloud2
-import numpy as np
 import tf
 import tf.transformations
 
