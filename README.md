@@ -3,10 +3,8 @@
 A simple localization framework that can re-localize in built maps based on [FAST-LIO] and works with ROS Noetic(https://github.com/hku-mars/FAST_LIO). 
 
 ## News
-
-~~- **2021-08-11:** Add **Open3D 0.7** support.
-  
-~~- **2021-08-09:** Migrate to **Open3D** for better performance.
+2025-2-27
+在livox_ros_driver2, python3, ROS-noetic环境下运行，适配Livox Hap Tx激光雷达
 
 ## 1. Features
 - Realtime 3D global localization in a pre-built point cloud map. 
@@ -88,36 +86,37 @@ Corresponding map: [Google Drive](https://drive.google.com/file/d/1X_mhPlSCNj-1e
 
 The map can be built using LIO-SAM or FAST-LIO-SLAM.
 
-### 4.2 Run
+### 4.2 运行示例点云
 
 1. First, please make sure you're using the **Python ~~2.7~~ 3.8** environment;
 
-
-2. Run localization, here we take Livox HAP as an example:
-
+2. Run localization,使用livox hap tx：
 ```shell
 roslaunch fast_lio_localization localization_hap_tx.launch
 ```
 Wait for 3~5 seconds until the map cloud shows up in RVIZ;
 
-这里打开的是示例点云图，如果你想运行自己的点云图，输入以下代码
+这里打开的是示例点云图，而我运行我自己的点云图，则是输入以下代码
 ```bash
 roslaunch fast_lio_localization localization_hap_tx.launch map:=/home/xc/Project/wheel_chair_datas/E6_basement.pcd
 ```
-记得输入你正确的点云地图目录
+记得修改成你的点云地图路径
 
-3. If you are testing with the sample rosbag data:
+3.1 播放rosbag:
 ```shell
-rosbag play localization_test_scene_1.bag
+rosbag play localization_test.bag
 ```
 
-Or if you are running realtime
-
-```shell
-roslaunch livox_ros_driver livox_lidar_msg.launch
+附：rosbag录制步骤
+录制全部话题：
+```bash
+rosbag record -a -O localization_test.bag
 ```
-Please set the **publish_freq** in **livox_lidar_rviz.launch** to **10Hz**, to ensure there are enough points for global localization in a single scan. 
-Support for higher frequency is coming soon.
+
+3.2 实时运行：
+```shell
+roslaunch livox_ros_driver2 msg_HAP.launch.launch
+```
 
 4. Provide initial pose
 ```shell
@@ -131,6 +130,7 @@ The initial guess can also be provided by the '2D Pose Estimate' Tool in RVIZ.
 Note that, during the initialization stage, it's better to keep the robot still. Or if you play bags, fistly play the bag for about 0.5s, and then pause the bag until the initialization succeed. 
 
 
+
 ## Related Works
 1. [FAST-LIO](https://github.com/hku-mars/FAST_LIO): A computationally efficient and robust LiDAR-inertial odometry (LIO) package
 2. [ikd-Tree](https://github.com/hku-mars/ikd-Tree): A state-of-art dynamic KD-Tree for 3D kNN search.
@@ -140,9 +140,3 @@ Note that, during the initialization stage, it's better to keep the robot still.
 
 ## Acknowledgments
 Thanks for the authors of [FAST-LIO](https://github.com/hku-mars/FAST_LIO) and [LIO-SAM_based_relocalization](https://github.com/Gaochao-hit/LIO-SAM_based_relocalization).
-
-## TODO
-1. Go over the timestamp issue of the published odometry and tf;
-2. Using integrated points for global localization;
-3. Fuse global localization with the state estimation of FAST-LIO, and smooth the localization trajectory; 
-4. Updating...
