@@ -88,9 +88,9 @@ The map can be built using LIO-SAM or FAST-LIO-SLAM.
 
 ### 4.2 运行示例点云
 
-1. First, please make sure you're using the **Python ~~2.7~~ 3.8** environment;
+1\. First, please make sure you're using the **Python ~~2.7~~ 3.8** environment;
 
-2. Run localization,使用livox hap tx：
+2\. Run localization,使用livox hap tx：
 ```shell
 roslaunch fast_lio_localization localization_hap_tx.launch
 ```
@@ -102,14 +102,15 @@ roslaunch fast_lio_localization localization_hap_tx.launch map:=/home/xc/Project
 ```
 记得修改成你的点云地图路径
 
-3. 启动点云数据输入，可以有两种方式i，实时采集或者rosbag
+3\. 启动点云数据输入，可以有两种方式，实时采集或者播放rosbag
    
-3.1 播放rosbag:
+3.1 播放rosbag（提前采好的动态点云）:
 ```shell
 rosbag play localization_test.bag
 ```
 
 附：rosbag录制步骤
+
 录制全部话题：
 ```bash
 rosbag record -a -O localization_test.bag
