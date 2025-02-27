@@ -93,13 +93,13 @@ The map can be built using LIO-SAM or FAST-LIO-SLAM.
 1. First, please make sure you're using the **Python ~~2.7~~ 3.8** environment;
 
 
-2. Run localization, here we take Livox AVIA as an example:
+2. Run localization, here we take Livox HAP as an example:
 
 ```shell
-roslaunch fast_lio_localization localization_avia.launch map:=/path/to/your/map.pcd
+roslaunch fast_lio_localization localization_hap_tx.launch
 ```
 
-Please modify `/path/to/your/map.pcd` to your own map point cloud file path.
+确保已将把点云文件放在PCD文件夹下，并命名为map.pcd
 
 Wait for 3~5 seconds until the map cloud shows up in RVIZ;
 
