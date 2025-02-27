@@ -98,10 +98,13 @@ The map can be built using LIO-SAM or FAST-LIO-SLAM.
 ```shell
 roslaunch fast_lio_localization localization_hap_tx.launch
 ```
-
-确保已将把点云文件放在PCD文件夹下，并命名为map.pcd
-
 Wait for 3~5 seconds until the map cloud shows up in RVIZ;
+
+这里打开的是示例点云图，如果你想运行自己的点云图，输入以下代码
+```bash
+roslaunch fast_lio_localization localization_hap_tx.launch map:=/home/xc/Project/wheel_chair_datas/E6_basement.pcd
+```
+记得输入你正确的点云地图目录
 
 3. If you are testing with the sample rosbag data:
 ```shell
