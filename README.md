@@ -119,13 +119,7 @@ roslaunch livox_ros_driver2 msg_HAP.launch
 ```
 
 4. Provide initial pose
-```shell
-rosrun fast_lio_localization publish_initial_pose.py 14.5 -7.5 0 -0.25 0 0 
-```
-The numerical value **14.5 -7.5 0 -0.25 0 0** denotes 6D pose **x y z yaw pitch roll** in map frame, 
-which is a rough initial guess for **localization_test_scene_1.bag**. 
-
-The initial guess can also be provided by the '2D Pose Estimate' Tool in RVIZ.
+The initial guess provided by the '2D Pose Estimate' Tool in RVIZ.
 
 Note that, during the initialization stage, it's better to keep the robot still. Or if you play bags, fistly play the bag for about 0.5s, and then pause the bag until the initialization succeed. 
 
