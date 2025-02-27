@@ -102,6 +102,8 @@ roslaunch fast_lio_localization localization_hap_tx.launch map:=/home/xc/Project
 ```
 记得修改成你的点云地图路径
 
+3. 启动点云数据输入，可以有两种方式i，实时采集或者rosbag
+   
 3.1 播放rosbag:
 ```shell
 rosbag play localization_test.bag
