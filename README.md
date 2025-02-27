@@ -115,7 +115,7 @@ rosbag record -a -O localization_test.bag
 
 3.2 实时运行：
 ```shell
-roslaunch livox_ros_driver2 msg_HAP.launch.launch
+roslaunch livox_ros_driver2 msg_HAP.launch
 ```
 
 4. Provide initial pose
