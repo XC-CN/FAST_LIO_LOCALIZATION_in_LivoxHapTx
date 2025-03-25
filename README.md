@@ -96,7 +96,7 @@ Wait for 3~5 seconds until the map cloud shows up in RVIZ;
 
 2.2运行我自己的点云图，则是输入以下代码
 ```bash
-roslaunch fast_lio_localization localization_hap_tx.launch map:="$(rospack find fast_lio_localization)/../../../E6_basement.pcd"
+roslaunch fast_lio_localization localization_hap_tx.launch map:="$(rospack find fast_lio_localization)/../../E6_basement.pcd"
 ```
 记得修改成你的点云地图路径
 
