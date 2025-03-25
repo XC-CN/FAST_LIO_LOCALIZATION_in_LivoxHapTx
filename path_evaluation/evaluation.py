@@ -29,7 +29,7 @@ plt.axis('equal')
 
 # 保存图片
 plt.savefig('src/fast_lio_localization/path_evaluation/trajectory_comparison.png')
-print("轨迹比较图已保存至 src/fast_lio_localization/path_evaluation/trajectory_comparison.png")
+print("轨迹比较图已保存至 src/fast_lio_localization/doc/trajectory_comparison.png")
 
 # 打印完成信息
 print("轨迹比较图绘制完成")

@@ -124,6 +124,25 @@ roslaunch livox_ros_driver2 msg_HAP.launch
 
 注意，在初始化阶段，最好保持机器人静止不动。或者如果你播放数据包，首先播放大约0.5秒的数据，然后暂停数据包直到初始化成功。
 
+### 5.结果
+
+1.ros rqt_graph 
+
+![ROS Graph](doc/rosgraph.png)
+
+2.里程计轨迹图
+
+![Odometry Trajectory](doc/odometry_trajectory.png)
+
+3.定位轨迹图
+
+![Localization Trajectory](doc/localization_trajectory.png)
+
+4.轨迹比较图
+
+![Trajectory Comparison](doc/trajectory_comparison.png)
+
+
 
 
 ## Related Works

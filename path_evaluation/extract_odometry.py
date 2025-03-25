@@ -83,7 +83,7 @@ if __name__ == '__main__':
             plt.axis('equal')
             
             # 保存图片
-            image_file = 'src/fast_lio_localization/path_evaluation/odometry_trajectory.png'
+            image_file = 'src/fast_lio_localization/doc/odometry_trajectory.png'
             plt.savefig(image_file)
             print(f"轨迹图片已保存至 {image_file}")
             
