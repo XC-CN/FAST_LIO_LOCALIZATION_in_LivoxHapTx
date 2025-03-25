@@ -96,13 +96,13 @@ Wait for 3~5 seconds until the map cloud shows up in RVIZ;
 
 2.2 运行我自己的点云图，则是输入以下代码
 ```bash
-roslaunch fast_lio_localization localization_hap_tx.launch map:=$(find fast_lio_localization)/datas/E6_basement.pcd
+roslaunch fast_lio_localization localization_hap_tx.launch map:="$(rospack find fast_lio_localization)/../../../E6_basement.pcd"
 ```
 记得修改成你的点云地图路径
 
 ### 4.2 启动动态点云输入
  
-1. 播放rosbag（提前采好的动态点云）:
+1. 播放rosbag（提前采好的动态点云），新开一个终端:
 ```shell
 rosbag play localization_test.bag
 ```
@@ -114,15 +114,15 @@ rosbag play localization_test.bag
 rosbag record -a -O localization_test.bag
 ```
 
-2。 实时运行激光雷达以获得点云数据：
+2. 实时运行激光雷达以获得点云数据：
 ```shell
 roslaunch livox_ros_driver2 msg_HAP.launch
 ```
 
-4. Provide initial pose
-The initial guess provided by the '2D Pose Estimate' Tool in RVIZ.
+2.1 提供初始位姿
+使用RVIZ中的'2D Pose Estimate'工具提供初始位姿估计。
 
-Note that, during the initialization stage, it's better to keep the robot still. Or if you play bags, fistly play the bag for about 0.5s, and then pause the bag until the initialization succeed. 
+注意，在初始化阶段，最好保持机器人静止不动。或者如果你播放数据包，首先播放大约0.5秒的数据，然后暂停数据包直到初始化成功。
 
 
 
