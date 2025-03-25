@@ -76,17 +76,8 @@ Clone the repository and catkin_make:
   ```export PCL_ROOT={CUSTOM_PCL_PATH}```
 
 
-## 4. Run Localization
-### 4.1 Sample Dataset
-
-Demo rosbag in a large underground garage: 
-[Google Drive](https://drive.google.com/file/d/15ZZAcz84mDxaWviwFPuALpkoeK-KAh-4/view?usp=sharing) | [Baidu Pan (Code: ne8d)](https://pan.baidu.com/s/1ceBiIAUqHa1vY3QjWpxwNA);
-
-Corresponding map: [Google Drive](https://drive.google.com/file/d/1X_mhPlSCNj-1erp_DStCQZfkY7l4w7j8/view?usp=sharing) | [Baidu Pan (Code: kw6f)](https://pan.baidu.com/s/1Yw4vY3kEK8x2g-AsBi6VCw)
-
-The map can be built using LIO-SAM or FAST-LIO-SLAM.
-
-### 4.2 运行示例点云
+## 4. 运行定位算法
+### 4.1 打开点云地图
 
 1\. First, please make sure you're using the **Python ~~2.7~~ 3.8** environment;
 
@@ -102,9 +93,9 @@ roslaunch fast_lio_localization localization_hap_tx.launch map:=/home/xc/Project
 ```
 记得修改成你的点云地图路径
 
-3\. 启动点云数据输入，可以有两种方式，实时采集或者播放rosbag
-   
-3.1 播放rosbag（提前采好的动态点云）:
+### 4.2 启动动态点云输入
+ 
+1. 播放rosbag（提前采好的动态点云）:
 ```shell
 rosbag play localization_test.bag
 ```
@@ -116,7 +107,7 @@ rosbag play localization_test.bag
 rosbag record -a -O localization_test.bag
 ```
 
-3.2 实时运行：
+2。 实时运行激光雷达以获得点云数据：
 ```shell
 roslaunch livox_ros_driver2 msg_HAP.launch
 ```
