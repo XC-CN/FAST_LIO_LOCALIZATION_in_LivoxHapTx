@@ -77,19 +77,26 @@ Clone the repository and catkin_make:
 
 
 ## 4. 运行定位算法
+### 4.0 准备步骤
+1.终端进入工作空间根目录\
+2.加载工作空间环境变量
+```bash
+source devel/setup.bash
+```
+
 ### 4.1 打开点云地图
 
 1\. First, please make sure you're using the **Python ~~2.7~~ 3.8** environment;
 
-2\. Run localization,使用livox hap tx：
-```shell
+2.1 打开示例点云地图,使用livox hap tx：
+```bash
 roslaunch fast_lio_localization localization_hap_tx.launch
 ```
 Wait for 3~5 seconds until the map cloud shows up in RVIZ;
 
-这里打开的是示例点云图，而我运行我自己的点云图，则是输入以下代码
+2.2 运行我自己的点云图，则是输入以下代码
 ```bash
-roslaunch fast_lio_localization localization_hap_tx.launch map:=/home/xc/Project/wheel_chair/datas/E6_basement.pcd
+roslaunch fast_lio_localization localization_hap_tx.launch map:=$(find fast_lio_localization)/datas/E6_basement.pcd
 ```
 记得修改成你的点云地图路径
 
