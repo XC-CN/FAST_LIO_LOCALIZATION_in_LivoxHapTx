@@ -1,7 +1,4 @@
-<launch>
-    <!-- 启动 livox_ros_driver2 的 msg_HAP.launch -->
-    <include file="$(find livox_ros_driver2)/launch_ROS1/msg_HAP.launch" />
-   
+<launch>      
     <!-- 是否启动 RViz 显示 -->
     <arg name="rviz" default="true" />
  
@@ -22,7 +19,7 @@
     <node pkg="fast_lio_localization" type="fastlio_mapping" name="laserMapping" output="screen" />
 
     <!-- 指定地图文件路径 -->
-	<arg name="map" default="$(find fast_lio_localization)/PCD/map.pcd" />
+	<arg name="map" default="$(find fast_lio_localization)/PCD/example.pcd" />
 	
     <!-- 全局定位节点 -->
     <node pkg="fast_lio_localization" type="global_localization.py" name="global_localization" output="screen" />
