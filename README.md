@@ -102,33 +102,34 @@ roslaunch fast_lio_localization localization_hap_tx.launch map:="$(rospack find 
 
 ### 4.2 启动动态点云输入
  
-1.播放rosbag（提前采好的动态点云），新开一个终端:
+1.输入点云数据
+
+* 播放rosbag（提前采好的动态点云），新开一个终端:
 ```shell
-rosbag play localization_test.bag
+rosbag play localization_test.bag --topics /livox/lidar /livox/imu
 ```
 
-附：rosbag录制步骤
-
-录制全部话题：
-```bash
-rosbag record -a -O localization_test.bag
-```
-
-2.实时运行激光雷达以获得点云数据：
+* 实时运行激光雷达以获得点云数据：
 ```shell
 roslaunch livox_ros_driver2 msg_HAP.launch
 ```
 
-2.1 提供初始位姿
+2.提供初始位姿
+
 使用RVIZ中的'2D Pose Estimate'工具提供初始位姿估计。
 
 注意，在初始化阶段，最好保持机器人静止不动。或者如果你播放数据包，首先播放大约0.5秒的数据，然后暂停数据包直到初始化成功。
+
+* 或者直接播放所有话题的rosbag，包括建图结果
+```shell
+rosbag play localization_test.bag
+```
 
 ### 5.结果
 
 1.ros rqt_graph 
 
-![ROS Graph](doc/rosgraph.png)
+![ROS Graph](doc/rosgraph_only_lidar_data.png)
 
 2.里程计轨迹图
 
