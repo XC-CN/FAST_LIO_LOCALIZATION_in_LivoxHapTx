@@ -86,15 +86,13 @@ source devel/setup.bash
 
 ### 4.1 打开点云地图
 
-1\. First, please make sure you're using the **Python ~~2.7~~ 3.8** environment;
-
-2.1打开示例点云地图,使用livox hap tx：
+* 打开示例点云地图,使用livox hap tx：
 ```bash
 roslaunch fast_lio_localization localization_hap_tx.launch
 ```
 Wait for 3~5 seconds until the map cloud shows up in RVIZ;
 
-2.2运行我自己的点云图，则是输入以下代码
+* 运行我自己的点云图，则是输入以下代码
 ```bash
 roslaunch fast_lio_localization localization_hap_tx.launch map:="$(rospack find fast_lio_localization)/../../E6_basement.pcd"
 ```
@@ -129,7 +127,7 @@ rosbag play localization_test.bag
 
 1.ros rqt_graph 
 
-![ROS Graph](doc/rosgraph_only_lidar_data.png)
+![ROS Graph](doc/rosgraph.png)
 
 2.里程计轨迹图
 
