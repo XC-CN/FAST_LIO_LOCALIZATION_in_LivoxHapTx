@@ -123,23 +123,25 @@ roslaunch livox_ros_driver2 msg_HAP.launch
 rosbag play localization_test.bag
 ```
 
-### 5.结果
+### 5.轨迹对比
+
+新建了src/path_evaluation文件夹，里面有extract_odometry.py和extract_localization.py，分别提取里程计和定位的轨迹，然后使用evaluation.py进行可视化
 
 1.ros rqt_graph 
 
 ![ROS Graph](doc/rosgraph.png)
 
-2.里程计轨迹图
+2.FAST-LIO2里程计（/Odometry）轨迹图
 
-![Odometry Trajectory](doc/odometry_trajectory.png)
+![Odometry Trajectory](path_evaluation/odometry.png)
 
-3.定位轨迹图
+3.FAST-LIO_LOCALIZATION定位（/localization）轨迹图
 
-![Localization Trajectory](doc/localization_trajectory.png)
+![Localization Trajectory](path_evaluation/localization.png)
 
 4.轨迹比较图
 
-![Trajectory Comparison](doc/trajectory_comparison.png)
+![Trajectory Comparison](doc/traj_compare.png)
 
 
 

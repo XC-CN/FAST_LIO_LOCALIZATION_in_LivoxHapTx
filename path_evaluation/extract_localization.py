@@ -12,8 +12,9 @@ import os
 # rospy.init_node('extract_and_plot_localization') 
 
 if __name__ == '__main__':
-    bag_file = 'localization_test.bag'  # 替换为您的 rosbag 文件名
-    csv_file = 'src/fast_lio_localization/path_evaluation/localization_trajectory.csv'  # 输出 CSV 文件名
+    bag_file = 'trajectory.bag'  # 替换为您的 rosbag 文件名
+    tum_file = 'src/fast_lio_localization/path_evaluation/localization.tum'  # 输出 TUM 文件名
+    image_file = 'src/fast_lio_localization/path_evaluation/localization.png'
 
     # 新增：定义允许的话题名称变体（根据实际情况调整）
     TARGET_TOPICS = [
@@ -52,44 +53,67 @@ if __name__ == '__main__':
             for topic, msg, t in bag.read_messages(topics=matched_topics):
                 # 添加类型检查
                 if hasattr(msg, 'pose') and hasattr(msg.pose, 'pose'):
-                    # 原始坐标
-                    x_orig = msg.pose.pose.position.x
-                    y_orig = msg.pose.pose.position.y
-                    z_orig = msg.pose.pose.position.z
+                    # 提取位置
+                    x = msg.pose.pose.position.x
+                    y = msg.pose.pose.position.y
+                    z = msg.pose.pose.position.z
                     
-                    # 顺时针旋转90度的坐标变换
-                    x = y_orig -2.5    # 新的x是原来的y
-                    y = -x_orig + 2.5    # 新的y是原来的-x
-                    z = z_orig      # z保持不变
+                    # 提取四元数
+                    qx = msg.pose.pose.orientation.x
+                    qy = msg.pose.pose.orientation.y
+                    qz = msg.pose.pose.orientation.z
+                    qw = msg.pose.pose.orientation.w
                     
-                    trajectory_data.append([t.to_sec(), x, y, z])
+                    # 保存为TUM格式: timestamp x y z qx qy qz qw
+                    trajectory_data.append([t.to_sec(), x, y, z, qx, qy, qz, qw])
             
             print(f"成功提取 {len(trajectory_data)} 条轨迹数据")
 
-            # 保存CSV
-            with open(csv_file, 'w') as f:
-                writer = csv.writer(f)
-                writer.writerow(['timestamp', 'x', 'y', 'z'])
-                writer.writerows(trajectory_data)
-                print(f"数据已保存至 {csv_file}")
+            # 保存TUM格式文件
+            with open(tum_file, 'w') as f:
+                # TUM格式不需要标题行，直接写入数据
+                for data in trajectory_data:
+                    # 格式化为TUM标准格式：timestamp x y z qx qy qz qw
+                    line = "{:.6f} {:.6f} {:.6f} {:.6f} {:.6f} {:.6f} {:.6f} {:.6f}\n".format(*data)
+                    f.write(line)
+                print(f"数据已保存为TUM格式至 {tum_file}")
 
             # ------------------ 可视化部分 ------------------
-            data = np.loadtxt(csv_file, delimiter=',', skiprows=1)
+            data = np.loadtxt(tum_file)
             x = data[:, 1]
             y = data[:, 2]
+            z = data[:, 3]
 
-            plt.figure(figsize=(10, 6))
-            plt.plot(x, y, marker='o', linestyle='-', markersize=2)
-            plt.xlabel('X (m)')
-            plt.ylabel('Y (m)')
-            plt.title('Localization Trajectory')
-            plt.grid(True)
-            plt.axis('equal')
+            # 创建左右分栏的图形
+            fig = plt.figure(figsize=(16, 8))
+            
+            # 左侧2D图
+            ax1 = fig.add_subplot(121)
+            ax1.plot(x, y, 'b-', linewidth=1, markersize=2)
+            ax1.set_xlabel('X (m)')
+            ax1.set_ylabel('Y (m)')
+            ax1.set_title('Localization Trajectory (2D)')
+            ax1.grid(True)
+            ax1.axis('equal')  # 保持XY轴比例一致
+            
+            # 右侧3D图
+            ax2 = fig.add_subplot(122, projection='3d')
+            ax2.plot(x, y, z, 'r-', linewidth=1, markersize=2)
+            ax2.set_xlabel('X (m)')
+            ax2.set_ylabel('Y (m)')
+            ax2.set_zlabel('Z (m)')
+            ax2.set_title('Localization Trajectory (3D)')
+            ax2.grid(True)
+            ax2.view_init(elev=30, azim=-45)  # 将azim从45度逆时针旋转90度到135度
+            
+            plt.tight_layout()
 
             # 保存图片
-            image_file = 'src/fast_lio_localization/doc/localization_trajectory.png'
             plt.savefig(image_file)
             print(f"轨迹图片已保存至 {image_file}")
+            
+            # 显示图形
+            plt.show()
 
     except FileNotFoundError as e:
         print(f"错误: {str(e)}")
