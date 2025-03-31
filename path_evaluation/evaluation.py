@@ -11,6 +11,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 
+# 设置文件路径
+ref_tum = "src/fast_lio_localization/path_evaluation/odometry.tum"  # 替换为您的参考轨迹文件路径
+est_tum = "src/fast_lio_localization/path_evaluation/localization.tum"  # 替换为您的估计轨迹文件路径
+output_dir = "src/fast_lio_localization/path_evaluation"  # 输出目录，保存在path_evaluation文件夹下
+
 def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
     """使用evo可视化轨迹并生成综合报告"""
     try:
@@ -166,10 +171,7 @@ def create_stats_pdf(ape_stats, rpe_stats, output_file):
     plt.savefig(output_file, bbox_inches='tight')
     plt.close()
 
-# 设置文件路径
-ref_tum = "src/fast_lio_localization/path_evaluation/odometry.tum"  # 替换为您的参考轨迹文件路径
-est_tum = "src/fast_lio_localization/path_evaluation/localization.tum"  # 替换为您的估计轨迹文件路径
-output_dir = "src/fast_lio_localization/path_evaluation"  # 输出目录，保存在path_evaluation文件夹下
+
 
 # 检查文件是否存在
 if not os.path.exists(ref_tum):
