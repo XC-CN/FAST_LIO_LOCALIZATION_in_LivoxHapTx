@@ -89,7 +89,7 @@ if __name__ == '__main__':
             
             # 左侧2D图
             ax1 = fig.add_subplot(121)
-            ax1.plot(x, y, 'b-', linewidth=1, markersize=2)
+            ax1.plot(x, y, marker='o', linestyle='-', markersize=2)
             ax1.set_xlabel('X (m)')
             ax1.set_ylabel('Y (m)')
             ax1.set_title('Localization Trajectory (2D)')
@@ -98,13 +98,13 @@ if __name__ == '__main__':
             
             # 右侧3D图
             ax2 = fig.add_subplot(122, projection='3d')
-            ax2.plot(x, y, z, 'r-', linewidth=1, markersize=2)
+            ax2.plot(x, y, z, marker='o', linestyle='-', markersize=2)
             ax2.set_xlabel('X (m)')
             ax2.set_ylabel('Y (m)')
             ax2.set_zlabel('Z (m)')
             ax2.set_title('Localization Trajectory (3D)')
             ax2.grid(True)
-            ax2.view_init(elev=30, azim=-45)  # 将azim从45度逆时针旋转90度到135度
+            # ax2.view_init(elev=30, azim=-45)  # 将azim从45度逆时针旋转90度到135度
             
             plt.tight_layout()
 
