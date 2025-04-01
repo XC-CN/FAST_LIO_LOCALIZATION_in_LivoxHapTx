@@ -16,6 +16,39 @@ ref_tum = "src/fast_lio_localization/path_evaluation/odometry.tum"  # 替换为�
 est_tum = "src/fast_lio_localization/path_evaluation/localization.tum"  # 替换为您的估计轨迹文件路径
 output_dir = "src/fast_lio_localization/path_evaluation"  # 输出目录，保存在path_evaluation文件夹下
 
+# # 预处理轨迹文件，删除前15秒的数据
+# def preprocess_trajectory_files(ref_file, est_file):
+#     """删除轨迹文件中前15秒的数据"""
+#     for file_path in [ref_file, est_file]:
+#         with open(file_path, 'r') as f:
+#             lines = f.readlines()
+        
+#         # 确保文件有数据且格式正确
+#         if len(lines) <= 1:  # 考虑可能有标题行
+#             continue
+            
+#         # 获取第一行的时间戳
+#         try:
+#             first_timestamp = float(lines[1].split()[0])  # 假设第一行可能是标题
+#         except:
+#             first_timestamp = float(lines[0].split()[0])  # 如果没有标题行
+            
+#         # 计算15秒后的时间戳
+#         cutoff_timestamp = first_timestamp + 15.0
+        
+#         # 过滤数据
+#         filtered_lines = [line for line in lines if (line.strip() and not line.strip()[0].isdigit()) or 
+#                          (line.strip() and float(line.split()[0]) >= cutoff_timestamp)]
+        
+#         # 写回文件
+#         with open(file_path, 'w') as f:
+#             f.writelines(filtered_lines)
+            
+#     return ref_file, est_file
+
+# # 预处理轨迹文件
+# ref_tum, est_tum = preprocess_trajectory_files(ref_tum, est_tum)
+
 def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
     """使用evo可视化轨迹并生成综合报告"""
     try:
@@ -33,7 +66,8 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
             "--align", 
             "--plot", 
             "--plot_mode=xyz", 
-            "--save_plot", f"{temp_dir}/trajectory_comparison.pdf"
+            "--save_plot", f"{temp_dir}/trajectory_comparison.pdf",
+            #"--no_gui"  # 不显示GUI窗口
         ]
         
         # 计算APE并输出详细统计信息
@@ -45,7 +79,8 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
             "--plot_mode=xyz",
             "--save_plot", f"{temp_dir}/ape_results.pdf",
             "--no_warnings",
-            "--verbose"  # 输出详细统计信息
+            "--verbose",  # 输出详细统计信息
+            #"--no_gui"  # 不显示GUI窗口
         ]
 
         # 计算RPE
@@ -57,7 +92,8 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
             "--plot_mode=xyz",
             "--save_plot", f"{temp_dir}/rpe_results.pdf",
             "--no_warnings",
-            "--verbose"
+            "--verbose",
+            #"--no_gui"  # 不显示GUI窗口
         ]
         
         # 执行命令
@@ -118,17 +154,25 @@ def extract_stats(output_text):
     stats = {}
     
     # 查找统计数据部分
+    # 首先检查输出文本中是否包含"stats"关键词
     if "stats" in output_text:
+        # 提取stats部分的文本，并获取相关行（第1-7行，包含统计数据）
         stats_section = output_text.split("stats")[1].split("\n")[1:7]
+        # 遍历每一行统计数据
         for line in stats_section:
+            # 检查行中是否包含分隔符":"
             if ":" in line:
+                # 按":"分割获取键值对
                 key, value = line.split(":", 1)
+                # 将键值对添加到stats字典中，去除空格并将值转换为浮点数
                 stats[key.strip()] = float(value.strip())
-    
     return stats
 
 def create_stats_pdf(ape_stats, rpe_stats, output_file):
     """创建包含APE和RPE统计数据的PDF"""
+    # 设置matplotlib不显示图形界面
+    plt.switch_backend('Agg')
+    
     plt.figure(figsize=(10, 6))
     plt.axis('off')
     
@@ -136,18 +180,23 @@ def create_stats_pdf(ape_stats, rpe_stats, output_file):
     table_data = []
     headers = ["Metric", "APE (m)", "RPE (m)"]
     
+    # 定义要显示的指标及其显示名称
     metrics = ["rmse", "mean", "median", "std", "min", "max"]
     metric_names = ["RMSE", "Mean", "Median", "Std Dev", "Min", "Max"]
     
+    # 遍历每个指标，获取APE和RPE的值
     for metric, name in zip(metrics, metric_names):
+        # 从统计数据中获取值，如果不存在则显示"N/A"
         ape_value = ape_stats.get(metric, "N/A")
         rpe_value = rpe_stats.get(metric, "N/A")
         
+        # 如果值是浮点数，则格式化为4位小数
         if isinstance(ape_value, float):
             ape_value = f"{ape_value:.4f}"
         if isinstance(rpe_value, float):
             rpe_value = f"{rpe_value:.4f}"
             
+        # 将指标名称和对应的APE、RPE值添加到表格数据中
         table_data.append([name, ape_value, rpe_value])
     
     # 创建表格
