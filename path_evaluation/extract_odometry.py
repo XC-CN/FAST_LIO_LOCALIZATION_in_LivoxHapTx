@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import rosbag
-import rospy
-import csv
 import matplotlib.pyplot as plt
 import numpy as np
 from nav_msgs.msg import Odometry
-import time
 import os
 from mpl_toolkits.mplot3d import Axes3D
 
