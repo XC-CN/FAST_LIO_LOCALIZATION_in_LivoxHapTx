@@ -44,7 +44,7 @@ def msg_to_array(pc_msg):
     pc[:, 2] = pc_array['z'] # 将z坐标赋值给numpy数组
     return pc # 返回numpy数组
 
-
+# 使用ICP算法进行点云配准
 def registration_at_scale(pc_scan, pc_map, initial, scale):
     # 在不同尺度下进行点云配准
     result_icp = o3d.pipelines.registration.registration_icp(
