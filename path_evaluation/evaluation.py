@@ -8,8 +8,17 @@ import subprocess
 import tempfile
 from PyPDF2 import PdfMerger
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import json
+
+# 设置默认matplotlib参数
+plt.rcParams['grid.alpha'] = 0.2  # 网格线透明度
+plt.rcParams['grid.linewidth'] = 0.5  # 更细的网格线
+plt.rcParams['xtick.major.size'] = 4.0  # 设置X轴主要刻度大小
+plt.rcParams['ytick.major.size'] = 4.0  # 设置Y轴主要刻度大小
+plt.rcParams['ytick.minor.visible'] = False  # 隐藏次要刻度
+plt.rcParams['xtick.minor.visible'] = False  # 隐藏次要刻度
 
 # 获取当前脚本目录
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -96,8 +105,29 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
         # 创建临时目录存放中间文件
         temp_dir = tempfile.mkdtemp()
         
-        # 首先设置evo配置，使用白底黑线的可视化样式
+        # 创建自定义matplotlibrc文件，让轨迹图中显示更稀疏的网格
+        mplrc_path = os.path.join(temp_dir, "matplotlibrc")
+        with open(mplrc_path, "w") as f:
+            f.write("ytick.direction : in\n")  # 刻度向内
+            f.write("xtick.direction : in\n")  # 刻度向内
+            f.write("grid.alpha : 0.2\n")  # 非常透明的网格线
+            f.write("grid.linewidth : 0.5\n")  # 更细的网格线
+            f.write("xtick.minor.visible : False\n")  # 不显示X次要刻度
+            f.write("ytick.minor.visible : False\n")  # 不显示Y次要刻度
+            f.write("ztick.minor.visible : False\n")  # 不显示Z次要刻度
+            f.write("axes.grid : True\n")
+            f.write("axes.grid.which : major\n")  # 只显示主要网格线
+            
+        # 设置环境变量，让evo使用自定义的matplotlibrc文件
+        os.environ["MATPLOTLIBRC"] = temp_dir
+
+        # 设置evo配置
         subprocess.run(["evo_config", "set", "plot_seaborn_style", "ticks"], check=True)
+        
+        # 设置其他evo配置参数
+        subprocess.run(["evo_config", "set", "plot_figsize", "10", "8"], check=True)
+        subprocess.run(["evo_config", "set", "plot_fontscale", "1.2"], check=True)
+        subprocess.run(["evo_config", "set", "plot_linewidth", "1.0"], check=True)
         
         # 1. 使用evo_traj生成轨迹对比图
         print("生成轨迹对比图...")
@@ -108,7 +138,7 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
             "--plot",
             "--plot_mode", "xyz",
             "--save_plot", f"{temp_dir}/trajectory_comparison.pdf",
-            "--save_as_tum"
+            "--no_warnings"
         ]
         
         subprocess.run(traj_cmd, check=True)
