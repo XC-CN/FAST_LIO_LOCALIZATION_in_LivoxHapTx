@@ -11,162 +11,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 
-# 设置文件路径
-ref_tum = "src/fast_lio_localization/path_evaluation/odometry.tum"  # 替换为您的参考轨迹文件路径
-est_tum = "src/fast_lio_localization/path_evaluation/localization.tum"  # 替换为您的估计轨迹文件路径
-output_dir = "src/fast_lio_localization/path_evaluation"  # 输出目录，保存在path_evaluation文件夹下
+# 获取当前脚本目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# # 预处理轨迹文件，删除前15秒的数据
-# def preprocess_trajectory_files(ref_file, est_file):
-#     """删除轨迹文件中前15秒的数据"""
-#     for file_path in [ref_file, est_file]:
-#         with open(file_path, 'r') as f:
-#             lines = f.readlines()
-        
-#         # 确保文件有数据且格式正确
-#         if len(lines) <= 1:  # 考虑可能有标题行
-#             continue
-            
-#         # 获取第一行的时间戳
-#         try:
-#             first_timestamp = float(lines[1].split()[0])  # 假设第一行可能是标题
-#         except:
-#             first_timestamp = float(lines[0].split()[0])  # 如果没有标题行
-            
-#         # 计算15秒后的时间戳
-#         cutoff_timestamp = first_timestamp + 15.0
-        
-#         # 过滤数据
-#         filtered_lines = [line for line in lines if (line.strip() and not line.strip()[0].isdigit()) or 
-#                          (line.strip() and float(line.split()[0]) >= cutoff_timestamp)]
-        
-#         # 写回文件
-#         with open(file_path, 'w') as f:
-#             f.writelines(filtered_lines)
-            
-#     return ref_file, est_file
+# 设置文件路径 - 使用绝对路径确保文件能够被找到
+ref_tum = os.path.join(current_dir, "odometry.tum")  # 参考轨迹文件路径
+est_tum = os.path.join(current_dir, "localization.tum")  # 估计轨迹文件路径
+output_dir = current_dir  # 输出目录，保存在当前文件夹下
 
-# # 预处理轨迹文件
-# ref_tum, est_tum = preprocess_trajectory_files(ref_tum, est_tum)
-
-def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
-    """使用evo可视化轨迹并生成综合报告"""
-    try:
-        # 创建输出目录
-        os.makedirs(output_dir, exist_ok=True)
-        
-        # 创建临时目录存放中间文件
-        temp_dir = tempfile.mkdtemp()
-        
-        # 构建evo命令 - 轨迹可视化
-        traj_cmd = [
-            "evo_traj", "tum", 
-            ref_tum, est_tum, 
-            "--ref", ref_tum, 
-            "--align", 
-            "--plot", 
-            "--plot_mode=xyz", 
-            "--save_plot", f"{temp_dir}/trajectory_comparison.pdf",
-            #"--no_gui"  # 不显示GUI窗口
-        ]
-        
-        # 计算APE并输出详细统计信息
-        ape_cmd = [
-            "evo_ape", "tum", 
-            ref_tum, est_tum, 
-            "-a", 
-            "--plot", 
-            "--plot_mode=xyz",
-            "--save_plot", f"{temp_dir}/ape_results.pdf",
-            "--no_warnings",
-            "--verbose",  # 输出详细统计信息
-            #"--no_gui"  # 不显示GUI窗口
-        ]
-
-        # 计算RPE
-        rpe_cmd = [
-            "evo_rpe", "tum", 
-            ref_tum, est_tum, 
-            "-a", 
-            "--plot", 
-            "--plot_mode=xyz",
-            "--save_plot", f"{temp_dir}/rpe_results.pdf",
-            "--no_warnings",
-            "--verbose",
-            #"--no_gui"  # 不显示GUI窗口
-        ]
-        
-        # 执行命令
-        print("执行命令:", " ".join(traj_cmd))
-        traj_result = subprocess.run(traj_cmd, check=True, capture_output=True, text=True)
-        print("轨迹可视化成功完成")
-        
-        print("执行命令:", " ".join(ape_cmd))
-        ape_result = subprocess.run(ape_cmd, check=True, capture_output=True, text=True)
-        print("APE计算成功完成")
-        ape_output = ape_result.stdout
-        
-        print("执行命令:", " ".join(rpe_cmd))
-        rpe_result = subprocess.run(rpe_cmd, check=True, capture_output=True, text=True)
-        print("RPE计算成功完成")
-        rpe_output = rpe_result.stdout
-        
-        # 提取APE和RPE的统计数据
-        ape_stats = extract_stats(ape_output)
-        rpe_stats = extract_stats(rpe_output)
-        
-        # 创建统计数据表格
-        create_stats_pdf(ape_stats, rpe_stats, f"{temp_dir}/stats_table.pdf")
-        
-        # 合并所有PDF
-        merger = PdfMerger()
-        
-        # 添加统计表格
-        merger.append(f"{temp_dir}/stats_table.pdf")
-        
-        # 添加轨迹对比图
-        merger.append(f"{temp_dir}/trajectory_comparison.pdf")
-        
-        # 添加APE结果
-        merger.append(f"{temp_dir}/ape_results.pdf")
-        
-        # 添加RPE结果
-        merger.append(f"{temp_dir}/rpe_results.pdf")
-        
-        # 保存合并后的PDF
-        merger.write(f"{output_dir}/trajectory_evaluation_report.pdf")
-        merger.close()
-        
-        print(f"综合评估报告已保存至: {output_dir}/trajectory_evaluation_report.pdf")
-        
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"执行evo命令时出错: {e}")
-        if e.stderr:
-            print(f"错误详情: {e.stderr}")
-        return False
-    except Exception as e:
-        print(f"可视化轨迹时出错: {e}")
-        return False
-
-def extract_stats(output_text):
-    """从evo输出中提取统计数据"""
-    stats = {}
-    
-    # 查找统计数据部分
-    # 首先检查输出文本中是否包含"stats"关键词
-    if "stats" in output_text:
-        # 提取stats部分的文本，并获取相关行（第1-7行，包含统计数据）
-        stats_section = output_text.split("stats")[1].split("\n")[1:7]
-        # 遍历每一行统计数据
-        for line in stats_section:
-            # 检查行中是否包含分隔符":"
-            if ":" in line:
-                # 按":"分割获取键值对
-                key, value = line.split(":", 1)
-                # 将键值对添加到stats字典中，去除空格并将值转换为浮点数
-                stats[key.strip()] = float(value.strip())
-    return stats
+print(f"参考轨迹文件路径: {ref_tum}")
+print(f"估计轨迹文件路径: {est_tum}")
+print(f"输出目录: {output_dir}")
 
 def create_stats_pdf(ape_stats, rpe_stats, output_file):
     """创建包含APE和RPE统计数据的PDF"""
@@ -220,7 +75,122 @@ def create_stats_pdf(ape_stats, rpe_stats, output_file):
     plt.savefig(output_file, bbox_inches='tight')
     plt.close()
 
+def extract_stats_from_file(file_path):
+    """从统计结果文件中提取统计数据"""
+    stats = {}
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            if "stats" in data:
+                stats = data["stats"]
+    except Exception as e:
+        print(f"读取统计文件时出错: {e}")
+    return stats
 
+def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
+    """使用evo可视化轨迹并生成综合报告"""
+    try:
+        # 创建输出目录
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 创建临时目录存放中间文件
+        temp_dir = tempfile.mkdtemp()
+        
+        # 首先设置evo配置，使用白底黑线的可视化样式
+        subprocess.run(["evo_config", "set", "plot_seaborn_style", "ticks"], check=True)
+        
+        # 1. 使用evo_traj生成轨迹对比图
+        print("生成轨迹对比图...")
+        traj_cmd = [
+            "evo_traj", "tum", ref_tum, est_tum,
+            "--ref", ref_tum,
+            "--align",
+            "--plot",
+            "--plot_mode", "xyz",
+            "--save_plot", f"{temp_dir}/trajectory_comparison.pdf",
+            "--save_as_tum"
+        ]
+        
+        subprocess.run(traj_cmd, check=True)
+        print("轨迹对比图已生成")
+        
+        # 2. 计算APE并保存结果
+        print("计算APE指标...")
+        ape_cmd = [
+            "evo_ape", "tum", ref_tum, est_tum,
+            "--align",
+            "--plot",
+            "--plot_mode", "xyz",
+            "--save_plot", f"{temp_dir}/ape_results.pdf",
+            "--save_results", f"{temp_dir}/ape_results.zip",
+            "--no_warnings"
+        ]
+        
+        subprocess.run(ape_cmd, check=True)
+        print("APE计算已完成")
+        
+        # 3. 计算RPE并保存结果
+        print("计算RPE指标...")
+        rpe_cmd = [
+            "evo_rpe", "tum", ref_tum, est_tum,
+            "--align",
+            "--plot",
+            "--plot_mode", "xyz",
+            "--save_plot", f"{temp_dir}/rpe_results.pdf",
+            "--save_results", f"{temp_dir}/rpe_results.zip",
+            "--no_warnings"
+        ]
+        
+        subprocess.run(rpe_cmd, check=True)
+        print("RPE计算已完成")
+        
+        # 4. 解压结果文件，获取统计数据
+        import zipfile
+        with zipfile.ZipFile(f"{temp_dir}/ape_results.zip", 'r') as zip_ref:
+            zip_ref.extractall(f"{temp_dir}/ape_results")
+        
+        with zipfile.ZipFile(f"{temp_dir}/rpe_results.zip", 'r') as zip_ref:
+            zip_ref.extractall(f"{temp_dir}/rpe_results")
+        
+        # 5. 提取APE和RPE的统计数据
+        ape_stats = extract_stats_from_file(f"{temp_dir}/ape_results/stats.json")
+        rpe_stats = extract_stats_from_file(f"{temp_dir}/rpe_results/stats.json")
+        
+        # 6. 创建统计数据表格
+        create_stats_pdf(ape_stats, rpe_stats, f"{temp_dir}/stats_table.pdf")
+        
+        # 7. 合并所有PDF
+        merger = PdfMerger()
+        
+        # 添加统计表格
+        merger.append(f"{temp_dir}/stats_table.pdf")
+        
+        # 添加轨迹对比图
+        merger.append(f"{temp_dir}/trajectory_comparison.pdf")
+        
+        # 添加APE结果
+        merger.append(f"{temp_dir}/ape_results.pdf")
+        
+        # 添加RPE结果
+        merger.append(f"{temp_dir}/rpe_results.pdf")
+        
+        # 保存合并后的PDF
+        merger.write(f"{output_dir}/trajectory_evaluation_report.pdf")
+        merger.close()
+        
+        print(f"综合评估报告已保存至: {output_dir}/trajectory_evaluation_report.pdf")
+        
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"执行evo命令时出错: {e}")
+        if e.stderr:
+            print(f"错误详情: {e.stderr}")
+        return False
+    except Exception as e:
+        print(f"可视化轨迹时出错: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 # 检查文件是否存在
 if not os.path.exists(ref_tum):
