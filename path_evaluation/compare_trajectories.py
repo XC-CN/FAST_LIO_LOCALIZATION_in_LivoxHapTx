@@ -5,8 +5,10 @@ import numpy as np
 import os
 from mpl_toolkits.mplot3d import Axes3D
 
-# 设置matplotlib字体大小为五号（约12pt）
-plt.rcParams.update({'font.size': 20})
+# 设置matplotlib字体大小为五号
+plt.rcParams.update({'font.size': 26})
+# 设置matplotlib不使用图形界面后端
+plt.switch_backend('Agg')
 
 def plot_trajectory(x_data, y_data, z_data, title_prefix, color='r', fig_size=(18, 8), 
                     labelpad=20, elev=30, azim=-45, output_file=None):
@@ -53,6 +55,7 @@ def plot_trajectory(x_data, y_data, z_data, title_prefix, color='r', fig_size=(1
         plt.savefig(output_file)
         print(f"{title_prefix}轨迹图片已保存至 {output_file}")
     
+    plt.close(fig)  # 关闭图形，避免显示
     return fig
 
 if __name__ == '__main__':
@@ -97,7 +100,6 @@ if __name__ == '__main__':
             color='r', 
             output_file=odometry_image
         )
-        plt.close(fig1)  # 关闭图1以避免显示
         
         # 绘制定位轨迹
         fig2 = plot_trajectory(
@@ -107,8 +109,7 @@ if __name__ == '__main__':
             output_file=localization_image
         )
         
-        # 显示图形
-        plt.show()
+        print("所有图像已成功保存，无窗口显示")
         
     except FileNotFoundError as e:
         print(f"错误: {str(e)}")
