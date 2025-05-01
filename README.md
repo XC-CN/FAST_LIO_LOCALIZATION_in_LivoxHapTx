@@ -116,7 +116,7 @@ rosbag play localization_test.bag
 
 ### 5.轨迹对比
 
-新建了src/path_evaluation文件夹，里面有extract_odometry.py和extract_localization.py，分别提取里程计和定位的轨迹，然后使用evaluation.py进行可视化
+新建了src/path_evaluation文件夹，里面有extract_odometry.py和extract_localization.py，分别提取里程计和定位的轨迹，然后使用compare_trajectories.py将这两个轨迹分别绘制出来。最后使用evaluation.py进行可视化评估。
 
 1.ros rqt_graph 
 

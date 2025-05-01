@@ -6,11 +6,10 @@
 import os
 import subprocess
 import tempfile
-from PyPDF2 import PdfMerger
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-import json
+import argparse  # 添加argparse模块
 
 # 设置默认matplotlib参数
 plt.rcParams['grid.alpha'] = 0.2  # 网格线透明度
@@ -19,6 +18,16 @@ plt.rcParams['xtick.major.size'] = 4.0  # 设置X轴主要刻度大小
 plt.rcParams['ytick.major.size'] = 4.0  # 设置Y轴主要刻度大小
 plt.rcParams['ytick.minor.visible'] = False  # 隐藏次要刻度
 plt.rcParams['xtick.minor.visible'] = False  # 隐藏次要刻度
+# 设置所有文字大小为26
+plt.rcParams['font.size'] = 26
+plt.rcParams['axes.titlesize'] = 26
+plt.rcParams['axes.labelsize'] = 26
+plt.rcParams['xtick.labelsize'] = 26
+plt.rcParams['ytick.labelsize'] = 26
+plt.rcParams['legend.fontsize'] = 26
+# 设置坐标轴标签的间距
+plt.rcParams['axes.labelpad'] = 20  # 增加标签的间距
+# 设置不显示图形界面 - 将在参数解析后决定是否启用
 
 # 获取当前脚本目录
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,78 +35,17 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # 设置文件路径 - 使用绝对路径确保文件能够被找到
 ref_tum = os.path.join(current_dir, "odometry.tum")  # 参考轨迹文件路径
 est_tum = os.path.join(current_dir, "localization.tum")  # 估计轨迹文件路径
-output_dir = current_dir  # 输出目录，保存在当前文件夹下
+output_dir = os.path.join(current_dir, "evo_results")  # 输出目录，设置为evo_results子文件夹
 
-print(f"参考轨迹文件路径: {ref_tum}")
-print(f"估计轨迹文件路径: {est_tum}")
-print(f"输出目录: {output_dir}")
-
-def create_stats_pdf(ape_stats, rpe_stats, output_file):
-    """创建包含APE和RPE统计数据的PDF"""
-    # 设置matplotlib不显示图形界面
-    plt.switch_backend('Agg')
+def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_plot=False):
+    """使用evo可视化轨迹并生成综合报告
     
-    plt.figure(figsize=(10, 6))
-    plt.axis('off')
-    
-    # 创建表格数据
-    table_data = []
-    headers = ["Metric", "APE (m)", "RPE (m)"]
-    
-    # 定义要显示的指标及其显示名称
-    metrics = ["rmse", "mean", "median", "std", "min", "max"]
-    metric_names = ["RMSE", "Mean", "Median", "Std Dev", "Min", "Max"]
-    
-    # 遍历每个指标，获取APE和RPE的值
-    for metric, name in zip(metrics, metric_names):
-        # 从统计数据中获取值，如果不存在则显示"N/A"
-        ape_value = ape_stats.get(metric, "N/A")
-        rpe_value = rpe_stats.get(metric, "N/A")
-        
-        # 如果值是浮点数，则格式化为4位小数
-        if isinstance(ape_value, float):
-            ape_value = f"{ape_value:.4f}"
-        if isinstance(rpe_value, float):
-            rpe_value = f"{rpe_value:.4f}"
-            
-        # 将指标名称和对应的APE、RPE值添加到表格数据中
-        table_data.append([name, ape_value, rpe_value])
-    
-    # 创建表格
-    table = plt.table(
-        cellText=table_data,
-        colLabels=headers,
-        loc='center',
-        cellLoc='center',
-        colWidths=[0.3, 0.3, 0.3]
-    )
-    
-    # 设置表格样式
-    table.auto_set_font_size(False)
-    table.set_fontsize(12)
-    table.scale(1, 2)
-    
-    # 添加标题
-    plt.title("Trajectory Evaluation Statistics", fontsize=16, pad=20)
-    
-    # 保存为PDF
-    plt.savefig(output_file, bbox_inches='tight')
-    plt.close()
-
-def extract_stats_from_file(file_path):
-    """从统计结果文件中提取统计数据"""
-    stats = {}
-    try:
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-            if "stats" in data:
-                stats = data["stats"]
-    except Exception as e:
-        print(f"读取统计文件时出错: {e}")
-    return stats
-
-def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
-    """使用evo可视化轨迹并生成综合报告"""
+    Args:
+        ref_tum: 参考轨迹文件路径
+        est_tum: 估计轨迹文件路径
+        output_dir: 输出目录路径
+        show_plot: 是否显示绘图窗口
+    """
     try:
         # 创建输出目录
         os.makedirs(output_dir, exist_ok=True)
@@ -117,117 +65,182 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./results"):
             f.write("ztick.minor.visible : False\n")  # 不显示Z次要刻度
             f.write("axes.grid : True\n")
             f.write("axes.grid.which : major\n")  # 只显示主要网格线
+            f.write("font.size : 26\n")  # 设置默认字体大小为26
+            f.write("axes.titlesize : 26\n")  # 设置标题字体大小为26
+            f.write("axes.labelsize : 26\n")  # 设置轴标签字体大小为26
+            f.write("xtick.labelsize : 26\n")  # 设置x轴刻度标签字体大小为26
+            f.write("ytick.labelsize : 26\n")  # 设置y轴刻度标签字体大小为26
+            f.write("legend.fontsize : 26\n")  # 设置图例字体大小为26
+            f.write("axes.labelpad : 20\n")  # 增加坐标轴标签的间距
+            f.write("axes3d.xaxis.panecolor : (0.95, 0.95, 0.95, 0.1)\n")  # 设置3D坐标轴面板颜色和透明度
+            f.write("axes3d.yaxis.panecolor : (0.95, 0.95, 0.95, 0.1)\n")
+            f.write("axes3d.zaxis.panecolor : (0.95, 0.95, 0.95, 0.1)\n")
+            # 根据参数决定是否使用非交互式后端
+            if not show_plot:
+                f.write("backend : Agg\n")  # 只在配置文件中设置非交互式后端
             
-        # 设置环境变量，让evo使用自定义的matplotlibrc文件
-        os.environ["MATPLOTLIBRC"] = temp_dir
+        # 保存原始环境变量，以便后续恢复
+        original_matplotlibrc = os.environ.get("MATPLOTLIBRC", "")
+        original_mplbackend = os.environ.get("MPLBACKEND", "")
+        
+        # 在子进程中使用自定义配置，不影响全局环境
+        env = os.environ.copy()
+        env["MATPLOTLIBRC"] = temp_dir
+        if not show_plot:
+            env["MPLBACKEND"] = "Agg"
 
-        # 设置evo配置
-        subprocess.run(["evo_config", "set", "plot_seaborn_style", "ticks"], check=True)
+        # 设置evo配置 - 使用修改后的环境变量执行命令
+
+        # 背景风格设置
+        subprocess.run(["evo_config", "set", "plot_seaborn_style", "ticks"], check=True, env=env)
+        
+        if not show_plot:
+            subprocess.run(["evo_config", "set", "plot_backend", "Agg"], check=True, env=env)
         
         # 设置其他evo配置参数
-        subprocess.run(["evo_config", "set", "plot_figsize", "10", "8"], check=True)
-        subprocess.run(["evo_config", "set", "plot_fontscale", "1.2"], check=True)
-        subprocess.run(["evo_config", "set", "plot_linewidth", "1.0"], check=True)
+        subprocess.run(["evo_config", "set", "plot_figsize", "12", "10"], check=True, env=env)  # 增大图形尺寸
+        subprocess.run(["evo_config", "set", "plot_fontscale", "2.0"], check=True, env=env)  # 增大字体比例
+        subprocess.run(["evo_config", "set", "plot_linewidth", "1.0"], check=True, env=env)
         
-        # 1. 使用evo_traj生成轨迹对比图
-        print("生成轨迹对比图...")
+        # 构建基本命令参数
+        plot_args = ["--plot", "--plot_mode", "xyz"]
+        
+        # 只在evo_traj命令中使用--show参数
+        traj_plot_args = plot_args.copy()
+        if show_plot:
+            traj_plot_args.append("--show")
+        
+        # 1. 使用evo_traj生成轨迹对比图 - 使用修改后的环境变量
+        
+        print("生成轨迹对比图...") # 打印提示信息，表示开始生成轨迹对比图
+        traj_png = os.path.join(output_dir, "trajectory_comparison.png") # 定义轨迹对比图的保存路径
         traj_cmd = [
             "evo_traj", "tum", ref_tum, est_tum,
             "--ref", ref_tum,
             "--align",
-            "--plot",
-            "--plot_mode", "xyz",
-            "--save_plot", f"{temp_dir}/trajectory_comparison.pdf",
-            "--no_warnings"
-        ]
+        ] + traj_plot_args + ["--save_plot", traj_png, "--no_warnings"]
         
-        subprocess.run(traj_cmd, check=True)
-        print("轨迹对比图已生成")
+        subprocess.run(traj_cmd, check=True, env=env) # 执行evo_traj命令，使用修改后的环境变量
+        print(f"轨迹对比图已保存至: {traj_png}") # 打印保存成功的提示信息和文件路径
         
-        # 2. 计算APE并保存结果
+        # 2. 计算APE并保存结果 - 使用修改后的环境变量
         print("计算APE指标...")
+        ape_png = os.path.join(output_dir, "ape_results.png")
         ape_cmd = [
             "evo_ape", "tum", ref_tum, est_tum,
             "--align",
-            "--plot",
-            "--plot_mode", "xyz",
-            "--save_plot", f"{temp_dir}/ape_results.pdf",
-            "--save_results", f"{temp_dir}/ape_results.zip",
-            "--no_warnings"
-        ]
+        ] + plot_args + ["--save_plot", ape_png, "--no_warnings"]
         
-        subprocess.run(ape_cmd, check=True)
-        print("APE计算已完成")
+        subprocess.run(ape_cmd, check=True, env=env)
+        print(f"APE结果图已保存至: {ape_png}")
         
-        # 3. 计算RPE并保存结果
+        # 3. 计算RPE并保存结果 - 使用修改后的环境变量
         print("计算RPE指标...")
+        rpe_png = os.path.join(output_dir, "rpe_results.png")
         rpe_cmd = [
             "evo_rpe", "tum", ref_tum, est_tum,
             "--align",
-            "--plot",
-            "--plot_mode", "xyz",
-            "--save_plot", f"{temp_dir}/rpe_results.pdf",
-            "--save_results", f"{temp_dir}/rpe_results.zip",
-            "--no_warnings"
-        ]
+        ] + plot_args + ["--save_plot", rpe_png, "--no_warnings"]
         
-        subprocess.run(rpe_cmd, check=True)
-        print("RPE计算已完成")
+        subprocess.run(rpe_cmd, check=True, env=env)
+        print(f"RPE结果图已保存至: {rpe_png}")
         
-        # 4. 解压结果文件，获取统计数据
-        import zipfile
-        with zipfile.ZipFile(f"{temp_dir}/ape_results.zip", 'r') as zip_ref:
-            zip_ref.extractall(f"{temp_dir}/ape_results")
+        print("\n评估结果总结:")
+        print(f"1. 轨迹对比图: {traj_png}")
+        print(f"2. APE结果图: {ape_png}")
+        print(f"3. RPE结果图: {rpe_png}")
         
-        with zipfile.ZipFile(f"{temp_dir}/rpe_results.zip", 'r') as zip_ref:
-            zip_ref.extractall(f"{temp_dir}/rpe_results")
-        
-        # 5. 提取APE和RPE的统计数据
-        ape_stats = extract_stats_from_file(f"{temp_dir}/ape_results/stats.json")
-        rpe_stats = extract_stats_from_file(f"{temp_dir}/rpe_results/stats.json")
-        
-        # 6. 创建统计数据表格
-        create_stats_pdf(ape_stats, rpe_stats, f"{temp_dir}/stats_table.pdf")
-        
-        # 7. 合并所有PDF
-        merger = PdfMerger()
-        
-        # 添加统计表格
-        merger.append(f"{temp_dir}/stats_table.pdf")
-        
-        # 添加轨迹对比图
-        merger.append(f"{temp_dir}/trajectory_comparison.pdf")
-        
-        # 添加APE结果
-        merger.append(f"{temp_dir}/ape_results.pdf")
-        
-        # 添加RPE结果
-        merger.append(f"{temp_dir}/rpe_results.pdf")
-        
-        # 保存合并后的PDF
-        merger.write(f"{output_dir}/trajectory_evaluation_report.pdf")
-        merger.close()
-        
-        print(f"综合评估报告已保存至: {output_dir}/trajectory_evaluation_report.pdf")
+        # 在所有处理完成后重置evo配置
+        try:
+            print("重置evo配置...")
+            if os.name == 'nt':  # Windows系统
+                reset_cmd = "echo y | evo_config reset"
+            else:  # Unix/Linux/Mac系统
+                reset_cmd = "yes y | evo_config reset"
+            subprocess.run(reset_cmd, shell=True, check=True, env=env)
+        except Exception as e:
+            print(f"重置evo配置时出错: {e}")
         
         return True
     except subprocess.CalledProcessError as e:
         print(f"执行evo命令时出错: {e}")
         if e.stderr:
             print(f"错误详情: {e.stderr}")
+        
+        # 即使出错也尝试重置配置
+        try:
+            print("重置evo配置...")
+            if os.name == 'nt':  # Windows系统
+                reset_cmd = "echo y | evo_config reset"
+            else:  # Unix/Linux/Mac系统
+                reset_cmd = "yes y | evo_config reset"
+            subprocess.run(reset_cmd, shell=True, check=True, env=env)
+        except Exception as reset_error:
+            print(f"重置evo配置时出错: {reset_error}")
+        
         return False
     except Exception as e:
         print(f"可视化轨迹时出错: {e}")
         import traceback
         traceback.print_exc()
+        
+        # 即使出错也尝试重置配置
+        try:
+            print("重置evo配置...")
+            if os.name == 'nt':  # Windows系统
+                reset_cmd = "echo y | evo_config reset"
+            else:  # Unix/Linux/Mac系统
+                reset_cmd = "yes y | evo_config reset"
+            subprocess.run(reset_cmd, shell=True, check=True, env=env)
+        except Exception as reset_error:
+            print(f"重置evo配置时出错: {reset_error}")
+        
         return False
 
-# 检查文件是否存在
-if not os.path.exists(ref_tum):
-    print(f"错误：参考轨迹文件 {ref_tum} 不存在")
-else:
-    if not os.path.exists(est_tum):
-        print(f"错误：估计轨迹文件 {est_tum} 不存在")
+def main():
+    """主函数，处理命令行参数并执行轨迹可视化"""
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description="轨迹可视化与评估工具")
+    parser.add_argument("--show", action="store_true", help="显示绘图窗口（默认不显示）")
+    parser.add_argument("--ref", default=ref_tum, help=f"参考轨迹文件路径（默认: {ref_tum}）")
+    parser.add_argument("--est", default=est_tum, help=f"估计轨迹文件路径（默认: {est_tum}）")
+    parser.add_argument("--output", default=output_dir, help=f"输出目录路径（默认: {output_dir}）")
+    
+    args = parser.parse_args()
+    
+    # 打印配置信息
+    print(f"参考轨迹文件路径: {args.ref}")
+    print(f"估计轨迹文件路径: {args.est}")
+    print(f"输出目录: {args.output}")
+    print(f"是否显示绘图窗口: {args.show}")
+    
+    # 检查文件是否存在
+    if not os.path.exists(args.ref):
+        print(f"错误：参考轨迹文件 {args.ref} 不存在")
     else:
-        # 可视化轨迹
-        visualize_trajectories(ref_tum, est_tum, output_dir)
+        if not os.path.exists(args.est):
+            print(f"错误：估计轨迹文件 {args.est} 不存在")
+        else:
+            # 可视化轨迹
+            visualize_trajectories(args.ref, args.est, args.output, args.show)
+
+    # 最后尝试重置配置
+    try:
+        print("\n重置全局evo配置...")
+        # 使用python的subprocess模块，通过communicate方法提供输入
+        reset_process = subprocess.Popen(["evo_config", "reset"], 
+                                        stdin=subprocess.PIPE, 
+                                        stdout=subprocess.PIPE, 
+                                        stderr=subprocess.PIPE,
+                                        text=True)
+        stdout, stderr = reset_process.communicate(input="y\n")
+        print(stdout)
+        if reset_process.returncode == 0:
+            print("evo配置已成功重置")
+        else:
+            print(f"重置失败: {stderr}")
+    except Exception as e:
+        print(f"重置evo配置失败: {e}")
+
+if __name__ == "__main__":
+    main()
