@@ -27,6 +27,11 @@ plt.rcParams['ytick.labelsize'] = 26
 plt.rcParams['legend.fontsize'] = 26
 # 设置坐标轴标签的间距
 plt.rcParams['axes.labelpad'] = 20  # 增加标签的间距
+# 设置图像DPI和输出质量
+plt.rcParams['figure.dpi'] = 300  # 设置显示DPI
+plt.rcParams['savefig.dpi'] = 300  # 设置保存DPI
+plt.rcParams['savefig.bbox'] = 'tight'  # 紧凑布局
+plt.rcParams['savefig.pad_inches'] = 0.1  # 边缘填充
 # 设置不显示图形界面 - 将在参数解析后决定是否启用
 
 # 获取当前脚本目录
@@ -72,6 +77,10 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_pl
             f.write("ytick.labelsize : 26\n")  # 设置y轴刻度标签字体大小为26
             f.write("legend.fontsize : 26\n")  # 设置图例字体大小为26
             f.write("axes.labelpad : 20\n")  # 增加坐标轴标签的间距
+            f.write("figure.dpi : 300\n")  # 设置显示DPI
+            f.write("savefig.dpi : 300\n")  # 设置保存DPI
+            f.write("savefig.bbox : tight\n")  # 紧凑布局
+            f.write("savefig.pad_inches : 0.1\n")  # 边缘填充
             f.write("axes3d.xaxis.panecolor : (0.95, 0.95, 0.95, 0.1)\n")  # 设置3D坐标轴面板颜色和透明度
             f.write("axes3d.yaxis.panecolor : (0.95, 0.95, 0.95, 0.1)\n")
             f.write("axes3d.zaxis.panecolor : (0.95, 0.95, 0.95, 0.1)\n")
@@ -97,9 +106,11 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_pl
         if not show_plot:
             subprocess.run(["evo_config", "set", "plot_backend", "Agg"], check=True, env=env)
         
-        # 设置其他evo配置参数
-        subprocess.run(["evo_config", "set", "plot_figsize", "12", "10"], check=True, env=env)  # 增大图形尺寸
-        subprocess.run(["evo_config", "set", "plot_fontscale", "2.0"], check=True, env=env)  # 增大字体比例
+        # # 设置其他evo配置参数
+        subprocess.run(["evo_config", "set", "plot_figsize", "12", "6"], check=True, env=env)  # 增大图形尺寸
+        subprocess.run(["evo_config", "set", "plot_fontscale", "1"], check=True, env=env)  # 增大字体比例
+        # 设置轨迹线宽为1.0（当前已注释掉）
+        # 这行代码用于配置evo工具包中轨迹线的宽度
         subprocess.run(["evo_config", "set", "plot_linewidth", "1.0"], check=True, env=env)
         
         # 构建基本命令参数
