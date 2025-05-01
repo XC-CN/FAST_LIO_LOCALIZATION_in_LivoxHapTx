@@ -11,6 +11,9 @@ import os
 
 # rospy.init_node('extract_and_plot_localization') 
 
+# 设置matplotlib字体大小为五号（约12pt）
+plt.rcParams.update({'font.size': 12})
+
 if __name__ == '__main__':
     bag_file = 'trajectory.bag'  # 替换为您的 rosbag 文件名
     tum_file = 'src/fast_lio_localization/path_evaluation/localization.tum'  # 输出 TUM 文件名
@@ -90,19 +93,21 @@ if __name__ == '__main__':
             # 左侧2D图
             ax1 = fig.add_subplot(121)
             ax1.plot(x, y, marker='o', linestyle='-', markersize=2)
-            ax1.set_xlabel('X (m)')
-            ax1.set_ylabel('Y (m)')
-            ax1.set_title('Localization Trajectory (2D)')
+            ax1.set_xlabel('X (m)', fontsize=12)
+            ax1.set_ylabel('Y (m)', fontsize=12)
+            ax1.set_title('Localization Trajectory (2D)', fontsize=12)
+            ax1.tick_params(labelsize=12)
             ax1.grid(True)
             ax1.axis('equal')  # 保持XY轴比例一致
             
             # 右侧3D图
             ax2 = fig.add_subplot(122, projection='3d')
             ax2.plot(x, y, z, marker='o', linestyle='-', markersize=2)
-            ax2.set_xlabel('X (m)')
-            ax2.set_ylabel('Y (m)')
-            ax2.set_zlabel('Z (m)')
-            ax2.set_title('Localization Trajectory (3D)')
+            ax2.set_xlabel('X (m)', fontsize=12)
+            ax2.set_ylabel('Y (m)', fontsize=12)
+            ax2.set_zlabel('Z (m)', fontsize=12)
+            ax2.set_title('Localization Trajectory (3D)', fontsize=12)
+            ax2.tick_params(labelsize=12)
             ax2.grid(True)
             # ax2.view_init(elev=30, azim=-45)  # 将azim从45度逆时针旋转90度到135度
             
