@@ -121,13 +121,14 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_pl
         # 
     
         # 图形尺寸
-        subprocess.run(["evo_config", "set", "plot_figsize", "12", "6"], check=True, env=env)  
+        subprocess.run(["evo_config", "set", "plot_figsize", "12", "8"], check=True, env=env)  
         
         # 字体比例设置值：
         # 轨迹对比图：1
         # xyz和rpy图：2
         # 速度图：1
-        subprocess.run(["evo_config", "set", "plot_fontscale", "1"], check=True, env=env)
+        # ape和rpe：1.7
+        subprocess.run(["evo_config", "set", "plot_fontscale", "1.7"], check=True, env=env)
         
         # 配置evo工具包中轨迹线的宽度
         subprocess.run(["evo_config", "set", "plot_linewidth", "1.0"], check=True, env=env)
