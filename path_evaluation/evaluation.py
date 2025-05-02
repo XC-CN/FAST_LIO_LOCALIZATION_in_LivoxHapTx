@@ -42,6 +42,16 @@ ref_tum = os.path.join(current_dir, "odometry.tum")  # 参考轨迹文件路径
 est_tum = os.path.join(current_dir, "localization.tum")  # 估计轨迹文件路径
 output_dir = os.path.join(current_dir, "evo_results")  # 输出目录，设置为evo_results子文件夹
 
+def preprocess_trajectory_files(input_file, output_file):
+    """预处理轨迹文件，使时间戳从0开始"""
+    data = np.loadtxt(input_file)
+    if len(data) > 0:
+        first_timestamp = data[0, 0]  # 获取第一个时间戳
+        data[:, 0] = data[:, 0] - first_timestamp  # 所有时间戳减去第一个时间戳
+        np.savetxt(output_file, data, fmt='%.6f')
+        print(f"已处理轨迹文件，时间从0开始: {output_file}")
+    return output_file
+
 def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_plot=False):
     """使用evo可视化轨迹并生成综合报告
     
@@ -106,11 +116,20 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_pl
         if not show_plot:
             subprocess.run(["evo_config", "set", "plot_backend", "Agg"], check=True, env=env)
         
-        # # 设置其他evo配置参数
-        subprocess.run(["evo_config", "set", "plot_figsize", "12", "6"], check=True, env=env)  # 增大图形尺寸
-        subprocess.run(["evo_config", "set", "plot_fontscale", "1"], check=True, env=env)  # 增大字体比例
-        # 设置轨迹线宽为1.0（当前已注释掉）
-        # 这行代码用于配置evo工具包中轨迹线的宽度
+        # 设置图片字体大小
+        # 字体大小：
+        # 
+    
+        # 图形尺寸
+        subprocess.run(["evo_config", "set", "plot_figsize", "12", "6"], check=True, env=env)  
+        
+        # 字体比例设置值：
+        # 轨迹对比图：1
+        # xyz和rpy图：2
+        # 速度图：1
+        subprocess.run(["evo_config", "set", "plot_fontscale", "1"], check=True, env=env)
+        
+        # 配置evo工具包中轨迹线的宽度
         subprocess.run(["evo_config", "set", "plot_linewidth", "1.0"], check=True, env=env)
         
         # 构建基本命令参数
@@ -121,13 +140,19 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_pl
         if show_plot:
             traj_plot_args.append("--show")
         
+        # 在visualize_trajectories函数中，创建处理后的文件
+        temp_ref_tum = os.path.join(output_dir, "Odometry.tum")
+        temp_est_tum = os.path.join(output_dir, "Localization.tum")
+        preprocess_trajectory_files(ref_tum, temp_ref_tum)
+        preprocess_trajectory_files(est_tum, temp_est_tum)
+
         # 1. 使用evo_traj生成轨迹对比图 - 使用修改后的环境变量
         
         print("生成轨迹对比图...") # 打印提示信息，表示开始生成轨迹对比图
         traj_png = os.path.join(output_dir, "trajectory_comparison.png") # 定义轨迹对比图的保存路径
         traj_cmd = [
-            "evo_traj", "tum", ref_tum, est_tum,
-            "--ref", ref_tum,
+            "evo_traj", "tum", temp_ref_tum, temp_est_tum,
+            "--ref", temp_ref_tum,
             "--align",
         ] + traj_plot_args + ["--save_plot", traj_png, "--no_warnings"]
         
@@ -138,7 +163,7 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_pl
         print("计算APE指标...")
         ape_png = os.path.join(output_dir, "ape_results.png")
         ape_cmd = [
-            "evo_ape", "tum", ref_tum, est_tum,
+            "evo_ape", "tum", temp_ref_tum, temp_est_tum,
             "--align",
         ] + plot_args + ["--save_plot", ape_png, "--no_warnings"]
         
@@ -149,7 +174,7 @@ def visualize_trajectories(ref_tum, est_tum, output_dir="./evo_results", show_pl
         print("计算RPE指标...")
         rpe_png = os.path.join(output_dir, "rpe_results.png")
         rpe_cmd = [
-            "evo_rpe", "tum", ref_tum, est_tum,
+            "evo_rpe", "tum", temp_ref_tum, temp_est_tum,
             "--align",
         ] + plot_args + ["--save_plot", rpe_png, "--no_warnings"]
         
